@@ -38,7 +38,11 @@ proxy_ = [
 def get_html(url):
     p = choice(proxy_)
     proxy = {p['schema']: p['address']}
-    response = requests.get(url, proxies=proxy, timeout=5)
+    s = requests.Session()
+    # print(p)
+    headers = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 ' \
+              '(KHTML, like Gecko) Chrome/80.0.3987.149 Safari/537.36'
+    response = requests.get(url, proxies=proxy, timeout=15, headers={'User-Agent': headers})
     return response.text
 
 
@@ -128,4 +132,4 @@ def write_db():
 
 if __name__ == '__main__':
     main()
-    write_db()
+    # write_db()
