@@ -49,15 +49,25 @@ def get_sale_page(url):
     return BeautifulSoup(get_html(url), 'lxml')
 
 
-def get_id_product(url):
-    return get_sale_page(url).find('div', class_='announcement-content-header').find('span', {'itemprop': 'sku'}).text
+# def get_id_product(url):
+#     return get_sale_page(url).find('div', class_='announcement-content-header').find('span', {'itemprop': 'sku'}).text
 
 
-def get_company_name(url):
+# def get_company_name(url):
+#     soup = get_sale_page(url)
+#     if soup.find('div', class_='announcement-verified'):
+#         return soup.find('div', class_='announcement-verified'). \
+#             find('p', class_='announcement-verified__name').text.strip()
+
+
+def product_page_information(url):
     soup = get_sale_page(url)
+    id_ = soup.find('div', class_='announcement-content-header').find('span', {'itemprop': 'sku'}).text
     if soup.find('div', class_='announcement-verified'):
-        return soup.find('div', class_='announcement-verified'). \
+        name = soup.find('div', class_='announcement-verified'). \
             find('p', class_='announcement-verified__name').text.strip()
+        return id_, name
+    return id_, ''
 
 
 def get_description(soup):
@@ -66,14 +76,14 @@ def get_description(soup):
     return ''
 
 
-def get_page_data(html):
-    soup = BeautifulSoup(html, 'lxml')
+def get_page_data(url):
+    soup = get_sale_page(url)
     data_cards = soup.find('ul', class_='list-simple__output').find_all('li', class_='announcement-container')
 
     for card in data_cards:
         url = f"https://www.bazaraki.com{card.find('a', class_='announcement-block__title').get('href')}"
 
-        id_product = get_id_product(url)
+        # id_product = get_id_product(url)
         title = card.find('a', class_='announcement-block__title').get('content')
         description = get_description(card)
 
@@ -94,9 +104,11 @@ def get_page_data(html):
 
         verified = security_check(block_pv)
 
-        company_name = get_company_name(url)
+        # company_name = get_company_name(url)
 
         counter_photo = get_quantity_photo(card)
+
+        id_product, company_name = product_page_information(url)
 
         # print(id_product, title, url, description, data, time, address, subcategory, final_price,
         #       price_without_discount, verified, company_name, counter_photo)

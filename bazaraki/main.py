@@ -4,13 +4,13 @@ from multiprocessing import Pool
 
 
 def make_all(url):
-    get_page_data(get_html(url))
+    get_page_data(url)
 
 
 @runtime
 def main():
     url = 'https://www.bazaraki.com/real-estate/?type_view=line&page={}'
-    urls = [url.format(str(page)) for page in range(1, 501)]
+    urls = [url.format(str(page)) for page in range(1, 2)]
     # try:
     with Pool(50) as p:
         p.map(make_all, urls)
