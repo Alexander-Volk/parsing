@@ -11,16 +11,10 @@ def make_all(url):
 @runtime
 def main():
     url = 'https://www.bazaraki.com/real-estate/?type_view=line&page={}'
-    urls = [url.format(str(page)) for page in range(1, 2)]
-    # for i in range(1, len(urls) + 1):
-    #     if os.path.exists(f'result/{i}'):
-    #         os.rmdir(f'result/{i}')
+    urls = [url.format(str(page)) for page in range(1, 11)]
 
-    # try:
     with Pool(50) as p:
         p.map(make_all, urls)
-    # except AttributeError:
-    #     print('Ошибка')
 
 
 if __name__ == '__main__':
