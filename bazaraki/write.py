@@ -1,4 +1,6 @@
 import csv
+import requests
+import os
 
 
 def write_csv(data):
@@ -9,3 +11,14 @@ def write_csv(data):
         ]
         writer = csv.DictWriter(file, fieldnames=order)
         writer.writerow(data)
+
+
+def save_photo(url, folder_name, name):
+    r = requests.get(url, stream=True)
+    if os.path.exists(folder_name):
+        with open(name, 'bw') as file:
+            file.write(r.content)
+    else:
+        os.mkdir(folder_name)
+        with open(name, 'bw') as file:
+            file.write(r.content)

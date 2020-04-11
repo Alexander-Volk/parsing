@@ -1,3 +1,4 @@
+import os
 from bazaraki.pars_data import get_html, get_page_data
 from check_runtime import runtime
 from multiprocessing import Pool
@@ -11,6 +12,10 @@ def make_all(url):
 def main():
     url = 'https://www.bazaraki.com/real-estate/?type_view=line&page={}'
     urls = [url.format(str(page)) for page in range(1, 2)]
+    # for i in range(1, len(urls) + 1):
+    #     if os.path.exists(f'result/{i}'):
+    #         os.rmdir(f'result/{i}')
+
     # try:
     with Pool(50) as p:
         p.map(make_all, urls)

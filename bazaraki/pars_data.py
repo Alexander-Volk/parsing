@@ -1,8 +1,7 @@
 import requests
 import datetime
 from bs4 import BeautifulSoup
-from check_runtime import runtime
-from bazaraki.write import write_csv
+from bazaraki.write import write_csv, save_photo
 
 
 def get_html(url):
@@ -62,12 +61,14 @@ def get_sale_page(url):
 
 def product_page_information(url):
     soup = get_sale_page(url)
+    photo_list = soup.find_all('img', {'itemprop': 'image'})
     id_ = soup.find('div', class_='announcement-content-header').find('span', {'itemprop': 'sku'}).text
+
     if soup.find('div', class_='announcement-verified'):
         name = soup.find('div', class_='announcement-verified'). \
             find('p', class_='announcement-verified__name').text.strip()
-        return id_, name
-    return id_, ''
+        return id_, name, photo_list
+    return id_, '', photo_list
 
 
 def get_description(soup):
@@ -76,12 +77,20 @@ def get_description(soup):
     return ''
 
 
+def get_url(soup):
+    return f"https://www.bazaraki.com{soup.find('a', class_='announcement-block__title').get('href')}"
+
+
+i_count = 0
+
+
 def get_page_data(url):
     soup = get_sale_page(url)
     data_cards = soup.find('ul', class_='list-simple__output').find_all('li', class_='announcement-container')
 
     for card in data_cards:
-        url = f"https://www.bazaraki.com{card.find('a', class_='announcement-block__title').get('href')}"
+        # url = f"https://www.bazaraki.com{card.find('a', class_='announcement-block__title').get('href')}"
+        url = get_url(card)
 
         # id_product = get_id_product(url)
         title = card.find('a', class_='announcement-block__title').get('content')
@@ -108,7 +117,13 @@ def get_page_data(url):
 
         counter_photo = get_quantity_photo(card)
 
-        id_product, company_name = product_page_information(url)
+        id_product, company_name, photo_list = product_page_information(url)
+        if photo_list:
+            for photo in photo_list:
+                self_photo = photo.get('src')
+                print(id_product, self_photo)
+                save_photo(self_photo, f'result/{id_product}', f"result/{id_product}/{self_photo.split('/')[-1]}")
+            print('DONE')
 
         # print(id_product, title, url, description, data, time, address, subcategory, final_price,
         #       price_without_discount, verified, company_name, counter_photo)
@@ -128,4 +143,5 @@ def get_page_data(url):
             'company_name': company_name,
             'counter_photo': counter_photo,
         }
-        write_csv(data)
+        # write_csv(data)
+
