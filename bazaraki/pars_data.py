@@ -2,6 +2,7 @@ import requests
 import datetime
 from bs4 import BeautifulSoup
 from bazaraki.write import write_csv, save_photo
+from check_runtime import runtime
 
 
 def get_html(url):
@@ -15,7 +16,7 @@ def get_html(url):
 def update_datetime(dt):
     dt = dt.split()
     if 'Today' in dt[0]:
-        dt[0] = datetime.date.today().strftime('%d.%m.%Y')  # задаем формат даты день.месяц.год, если из строки нужно
+        dt[0] = datetime.date.today()  # задаем формат даты день.месяц.год, если из строки нужно
         # получить datetime используем strptime(формат)
     return dt
 
@@ -26,19 +27,19 @@ def get_all_prices(block):
         price_without_discount = block.find('span', class_='announcement-block__discount-start').text.strip()[1:]
     else:
         price_without_discount = price
-    return price, price_without_discount.replace('.', '')
+    return float(price), float(price_without_discount.replace('.', ''))
 
 
 def security_check(block):
     if block.find('span', class_='verified'):
-        return 'True'
-    return 'False'
+        return True
+    return False
 
 
 def get_quantity_photo(soup):
     if soup.find('div', class_='list-announcement-block-img').find('img') and \
             soup.find('div', class_='photo-commodities'):
-        return soup.find('div', class_='photo-commodities').text.strip()
+        return int(soup.find('div', class_='photo-commodities').text.strip())
     elif soup.find('div', class_='list-announcement-block-img').find('img'):
         return 1
     return 0
@@ -56,8 +57,8 @@ def product_page_information(url):
     if soup.find('div', class_='announcement-verified'):
         name = soup.find('div', class_='announcement-verified'). \
             find('p', class_='announcement-verified__name').text.strip()
-        return id_, name, photo_list
-    return id_, '', photo_list
+        return int(id_), name, photo_list
+    return int(id_), '', photo_list
 
 
 def get_description(soup):
@@ -66,7 +67,9 @@ def get_description(soup):
     return ''
 
 
+@runtime
 def get_page_data(url):
+    list_data = []
     soup = get_sale_page(url)
     data_cards = soup.find('ul', class_='list-simple__output').find_all('li', class_='announcement-container')
 
@@ -78,8 +81,8 @@ def get_page_data(url):
 
         block_date = card.find('div', class_='announcement-block__date').text.strip().split(',')
         dt = update_datetime(block_date[0])  # записать в виде date/time object
-        data = str(dt[0])
-        time = str(dt[1])
+        data = dt[0]
+        time = dt[1]
 
         try:
             address = f'{block_date[1].strip()},{block_date[2]}'
@@ -101,10 +104,10 @@ def get_page_data(url):
             for photo in photo_list:
                 self_photo = photo.get('src')
                 # передаем src-url, директорию(id) и имя файла с расширением jpg
-                save_photo(self_photo, f'result/{id_product}', f"result/{id_product}/{self_photo.split('/')[-1]}")
+                # save_photo(self_photo, f'result/{id_product}', f"result/{id_product}/{self_photo.split('/')[-1]}")
 
         data = {
-            'id_product': id_product,
+            'id_product': int(id_product),
             'title': title,
             'url': url,
             'description': description,
@@ -118,4 +121,6 @@ def get_page_data(url):
             'company_name': company_name,
             'counter_photo': counter_photo,
         }
-        write_csv(data)  # включить при записи в csv
+        # write_csv(data)  # включить при записи в csv
+
+        list_data.append(data)

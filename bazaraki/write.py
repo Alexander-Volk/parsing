@@ -1,6 +1,7 @@
 import csv
 import requests
 import os
+from peewee import *
 
 
 def write_csv(data):
@@ -22,3 +23,25 @@ def save_photo(url, folder_name, name):
         os.mkdir(folder_name)
         with open(name, 'bw') as file:
             file.write(r.content)
+
+
+db = PostgresqlDatabase(database='testpars', user='volk', host='localhost')
+
+
+class Product(Model):
+    id_product = IntegerField()
+    title = CharField()
+    url = TextField()
+    description = TextField()
+    data = DateField()
+    time = CharField()
+    address = CharField()
+    subcategory = CharField()
+    final_price = FloatField()
+    price_without_discount = FloatField()
+    verified = BooleanField()
+    company_name = CharField()
+    counter_photo = SmallIntegerField()
+
+    class Meta:
+        database = db
